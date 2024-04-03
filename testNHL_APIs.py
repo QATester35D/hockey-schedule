@@ -71,7 +71,7 @@ def createInitialExcelSetup():
                 dayOfWeekIndex+=1
             case 8:
                 worksheet.write(0, a, "Game Count")
-    for a in range(loopPlusTwo):
+    for a in range(loopPlusTwo): #for row 1 (second row)
         match a:
             case 0:
                 worksheet.write(1, a, "Team Name") 
