@@ -7,50 +7,55 @@ import xlsxwriter
 # Import svglib and reportlab
 # from svglib.svglib import svg2rlg
 # from reportlab.graphics import renderPM
+class ProTeams:
+    def __init__(self):
+        self.proTeamArray = [("BOS","Boston Bruins","BOS.png"),
+            ("BUF","Buffalo Sabres","BUF.png"),
+            ("CGY","Calgary Flames","CGY.png"),
+            ("CHI","Chicago Blackhawks","CHI.png"),
+            ("DET","Detroit Red Wings","DET.png"),
+            ("EDM","Edmonton Oilers","EDM.png"),
+            ("CAR","Carolina Hurricanes","CAR.png"),
+            ("LA","Los Angeles Kings","LA.png"),
+            ("DAL","Dallas Stars","DAL.png"),
+            ("MTL","Montréal Canadiens","MTL.png"),
+            ("NJ","New Jersey Devils","NJ.png"),
+            ("NYI","New York Islanders","NYI.png"),
+            ("NYR","New York Rangers","NYR.png"),
+            ("OTT","Ottawa Senators","OTT.png"),
+            ("PHI","Philadelphia Flyers","PHI.png"),
+            ("PIT","Pittsburgh Penguins","PIT.png"),
+            ("COL","Colorado Avalanche","COL.png"),
+            ("SJ","San Jose Sharks","SJ.png"),
+            ("STL","St. Louis Blues","STL.png"),
+            ("TB","Tampa Bay Lightning","TB.png"),
+            ("TOR","Toronto Maple Leafs","TOR.png"),
+            ("VAN","Vancouver Canucks","VAN.png"),
+            ("WSH","Washington Capitals","WSH.png"),
+            ("ARI","Arizona Coyotes","ARI.png"),
+            ("ANA","Anaheim Ducks","ANA.png"),
+            ("FLA","Florida Panthers","FLA.png"),
+            ("NSH","Nashville Predators","NSH.png"),
+            ("WPG","Winnipeg Jets","WPG.png"),
+            ("CBJ","Columbus Blue Jackets","CBJ.png"),
+            ("MIN","Minnesota Wild","MIN.png"),
+            ("VGK","Vegas Golden Knights","VGK.png"),
+            ("SEA","Seattle Kraken","SEA.png")
+        ]
 
-proTeamList = [("BOS","Boston Bruins","BOS.png"),
-    ("BUF","Buffalo Sabres","BUF.png"),
-    ("CGY","Calgary Flames","CGY.png"),
-    ("CHI","Chicago Blackhawks","CHI.png"),
-    ("DET","Detroit Red Wings","DET.png"),
-    ("EDM","Edmonton Oilers","EDM.png"),
-    ("CAR","Carolina Hurricanes","CAR.png"),
-    ("LA","Los Angeles Kings","LA.png"),
-    ("DAL","Dallas Stars","DAL.png"),
-    ("MTL","Montréal Canadiens","MTL.png"),
-    ("NJ","New Jersey Devils","NJ.png"),
-    ("NYI","New York Islanders","NYI.png"),
-    ("NYR","New York Rangers","NYR.png"),
-    ("OTT","Ottawa Senators","OTT.png"),
-    ("PHI","Philadelphia Flyers","PHI.png"),
-    ("PIT","Pittsburgh Penguins","PIT.png"),
-    ("COL","Colorado Avalanche","COL.png"),
-    ("SJ","San Jose Sharks","SJ.png"),
-    ("STL","St. Louis Blues","STL.png"),
-    ("TB","Tampa Bay Lightning","TB.png"),
-    ("TOR","Toronto Maple Leafs","TOR.png"),
-    ("VAN","Vancouver Canucks","VAN.png"),
-    ("WSH","Washington Capitals","WSH.png"),
-    ("ARI","Arizona Coyotes","ARI.png"),
-    ("ANA","Anaheim Ducks","ANA.png"),
-    ("FLA","Florida Panthers","FLA.png"),
-    ("NSH","Nashville Predators","NSH.png"),
-    ("WPG","Winnipeg Jets","WPG.png"),
-    ("CBJ","Columbus Blue Jackets","CBJ.png"),
-    ("MIN","Minnesota Wild","MIN.png"),
-    ("VGK","Vegas Golden Knights","VGK.png"),
-    ("SEA","Seattle Kraken","SEA.png")
-]
+    def findTeamRowInArray (self, teamName):
+        for sublist in self.proTeamArray:
+            for element in sublist:
+                if element == teamName:
+                    return sublist
+        return None #if value not found
 
-def findTeamRowInArray (tName):
-    i=0
-    for element in proTeamList:
-        if tName in element:
-            return i
-        else:
-            i+=1
-
-teamRow=findTeamRowInArray("COL")
+team=ProTeams()
+teamRowInfo=team.findTeamRowInArray("COL") #returns the index for the value in the array (array starts with 0)
+teamAbbrevName=teamRowInfo[0]
+teamFullName=teamRowInfo[1]
+teamImageName=teamRowInfo[2]
+print(f"The team info is:{teamRowInfo}")
 
 def createInitialExcelSetup():
     #One time setup - Create an new Excel file and add a worksheet.
@@ -122,6 +127,12 @@ worksheet.write("B2", homeTeamName, bold) # Text with formatting.
 worksheet.insert_image("B3", "C:\\Temp\\HockeyTeamLogos\\VGK.png") # Insert an image.
 
 workbook.close()
+
+#Figure out how to append to an existing file. Reopen it, append data and close
+#Then make classes with inheritance to write the different data out using the child class with different methods
+#
+#Figure out how to put the array in a separate initialization file
+
 
 # def main():
 #     # define a variable to hold the source URL
