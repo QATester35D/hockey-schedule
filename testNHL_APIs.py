@@ -1,14 +1,16 @@
 import requests
 import json
-import xlsxwriter
-# from io import BytesIO
-# from urllib.request import urlopen
-# import cairosvg
-# Import svglib and reportlab
-# from svglib.svglib import svg2rlg
-# from reportlab.graphics import renderPM
+import os
+import sys
+from openpyxl import Workbook
+from openpyxl.styles import Font, Color, Alignment, Border, Side, PatternFill
+
+# from constants import proTeamArray
+
+#A class to find a team by the abbrev or full name and return the tuple of info for use later
 class ProTeams:
     def __init__(self):
+        # self.proTeamInfo = {}
         self.proTeamArray = [("BOS","Boston Bruins","BOS.png"),
             ("BUF","Buffalo Sabres","BUF.png"),
             ("CGY","Calgary Flames","CGY.png"),
@@ -44,19 +46,146 @@ class ProTeams:
         ]
 
     def findTeamRowInArray (self, teamName):
+        #If abbrev is mixed case, check for a length of 3 (3=abbrev), then make value all uppercase
+        if len(teamName) == 3:
+            teamName=teamName.upper()
         for sublist in self.proTeamArray:
             for element in sublist:
                 if element == teamName:
                     return sublist
         return None #if value not found
 
+#This class parses thru the API json and creates a text file of the info for the schedule
+class GetNHLSchedule:
+    def __init__(self):
+        self.nhlApi=requests.get('https://api-web.nhle.com/v1/schedule/2024-03-25')
+
+    def delete_file_if_exists(self, fname): #check for file, delete if exists to avoid duplicate schedules
+        if os.path.exists(fname): # Check if the file exists
+            os.remove(fname) # If it exists, delete the file
+            print(f"File '{fname}' deleted.")
+        else:
+            print(f"File '{fname}' does not exist.")
+
+    def getNhlGameInfo(self, fname):
+        r=self.nhlApi
+        print(r.status_code)
+        if r.status_code != 200:
+            print ("Problem connecting with NHL API")
+            exit
+        self.delete_file_if_exists(fname) #delete the file if it already exists so we don't append to it
+        f = open(fname, "a")
+        theJSON = json.loads(r.content)
+        for i in theJSON["gameWeek"]:
+            dateGameOfWeek = i["date"]
+            dayAbbrev = i["dayAbbrev"]
+            dayNumberOfGames = i["numberOfGames"]
+            for aRow in i["games"]:
+                awayTeamName = aRow["awayTeam"]["placeName"]["default"]
+                awayTeamAbbrev = aRow["awayTeam"]["abbrev"]
+                homeTeamName = aRow["homeTeam"]["placeName"]["default"]
+                homeTeamAbbrev = aRow["homeTeam"]["abbrev"]
+                gameInfo=dateGameOfWeek+","+dayAbbrev+","+str(dayNumberOfGames)+","+awayTeamAbbrev+","+homeTeamAbbrev+'\n'
+                f.write(gameInfo)
+        f.close()
+
+#A class to create the excel file with the scheduled data
+class WriteNHLSchedule:
+    def __init__(self, xName):
+        self.filename = xName
+        self.workbook = Workbook()
+        self.ws = self.workbook.active
+
+    def set_row_height(self, row, height):
+        self.ws.row_dimensions[row].height = height
+
+    def set_column_width(self, column, width):
+        self.ws.column_dimensions[column].width = width
+
+    def set_cell_font(self, row, column, font_name='Arial', font_size=11, bold=False, color=None):
+        cell = self.ws.cell(row=row, column=column)
+        cell.font = Font(name=font_name, size=font_size, bold=bold, color=color)
+
+    def set_cell_alignment(self, row, column, horizontal='center', vertical='center'):
+        cell = self.ws.cell(row=row, column=column)
+        cell.alignment = Alignment(horizontal=horizontal, vertical=vertical)
+
+    def set_cell_border(self, row, column, border_style='thin'):
+        cell = self.ws.cell(row=row, column=column)
+        border = Border(left=Side(style=border_style), right=Side(style=border_style), 
+                        top=Side(style=border_style), bottom=Side(style=border_style))
+        cell.border = border
+
+    def set_cell_fill_color(self, row, column, color='FFFFFF'):
+        cell = self.ws.cell(row=row, column=column)
+        fill = PatternFill(start_color=color, end_color=color, fill_type='solid')
+        cell.fill = fill
+
+    def set_column_width(self, start_column, end_column, width):
+        for col in range(start_column, end_column):
+            self.ws.column_dimensions[self.ws.cell(row=1, column=col).column_letter].width = width
+
+    def write_row_data(self, row, data):
+        for i, value in enumerate(data, start=1):
+            self.ws.cell(row=row, column=i, value=value)
+
+    def save_excel(self):
+        self.workbook.save(self.filename)
+
+    def updateExcelWithSchedule (self, fName):
+
+        # Open the text file in read mode to process through the schedule list
+        with open(fName, 'r') as file:
+            line = file.readline() # Read the first line
+            while line: # Continue reading lines until reaching end of file
+                # Process the current line (e.g., print it)
+                print(line.strip())  # .strip() removes trailing newline characters
+                line = file.readline() # Read the next line
+
+#######
+#Beginning of main code
+#Calling the class to find a team by the abbrev or full name and return the tuple of info
 team=ProTeams()
-teamRowInfo=team.findTeamRowInArray("COL") #returns the index for the value in the array (array starts with 0)
+# teamRowInfo=team.findTeamRowInArray("Minnesota Wild") #can use abbrev too, returns a tuple of the team values
+teamRowInfo=team.findTeamRowInArray("Col") #can use abbrev too, returns a tuple of the team values
+if teamRowInfo == None: #exit when no team was found; probably a typo
+    print("No team was found, exiting program as there is nothing to process.")
+    sys.exit()
 teamAbbrevName=teamRowInfo[0]
 teamFullName=teamRowInfo[1]
 teamImageName=teamRowInfo[2]
 print(f"The team info is:{teamRowInfo}")
 
+#Calling a class to parse thru the API json and creates a text file of the info for the schedule
+a=GetNHLSchedule()
+filename = "c:\\Temp\\demoHockeySchedle.txt"
+a.getNhlGameInfo(filename)
+
+#Calling a class to create the excel file with the scheduled data
+###this needs updating
+xName="c:\\Temp\\hockeydemo.xlsx"
+daysOfWeek = ["Abbrev","Team Logo","MON","TUE","WED","THU","FRI","SAT","SUN","Game Count"]
+daysOfWeekCount=len(daysOfWeek)
+loopPlusThree=daysOfWeekCount+3
+excelNhlSchedule=WriteNHLSchedule(xName)
+excelNhlSchedule.set_row_height(1, 15)
+excelNhlSchedule.set_column_width(1, 8, 11)  # Set columns A to H to width 10
+excelNhlSchedule.set_column_width(9,9, 12)
+loopRange=loopPlusThree+1
+for i in range(loopRange):
+    i+=1
+    excelNhlSchedule.set_cell_font(1, i, bold=True, color='090DF8')  # Set font bold and red color for cell A1
+    excelNhlSchedule.set_cell_alignment(1, i, horizontal='center', vertical='center')  # Center align cell A1
+    excelNhlSchedule.set_cell_border(1, i)  # Add thin border to cell A1
+    excelNhlSchedule.set_cell_fill_color(1, i, color='EEF8A6')  # Set light yellow fill color for cell A1
+dayOfWeekIndex=0
+excelNhlSchedule.write_row_data(1, daysOfWeek)  # Write data to row 2
+# excelNhlSchedule.workbook.close()
+excelNhlSchedule.save_excel()
+print("a")
+
+########################################################
+#Old/original code follows - may use
 def createInitialExcelSetup():
     #One time setup - Create an new Excel file and add a worksheet.
     workbook = xlsxwriter.Workbook("c:\\Temp\\hockeydemo.xlsx")
