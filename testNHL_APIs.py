@@ -98,6 +98,8 @@ class WriteNHLSchedule:
         self.filename = xName
         self.workbook = Workbook()
         self.ws = self.workbook.active
+        self.imageObj = Image()
+        self.img = self.imageObj
 
     def set_row_height(self, row, height):
         self.ws.row_dimensions[row].height = height
@@ -132,8 +134,16 @@ class WriteNHLSchedule:
         for i, value in enumerate(data, start=1):
             self.ws.cell(row=row, column=i, value=value)
 
-    def write_column_data(self, row, value):
-        self.ws.cell(row=row, column=1, value=value)
+    def write_column_data(self, row, column, value):
+        self.ws.cell(row=row, column=column, value=value)
+
+    def insert_team_logo(self, row, column, imageName):
+        row=str(row)
+        cellName=column+row
+        # img = Image('reflorestasp.png')
+        # img.anchor('A1')
+        self.img.anchor(cellName)
+        self.ws.add_image(imageName,cellName)
 
     def save_excel(self):
         self.workbook.save(self.filename)
@@ -162,7 +172,6 @@ teamImageName=teamRowInfo[2]
 print(f"The team info is:{teamRowInfo}")
 
 #Calling a class to parse thru the API json and creates a text file of the info for the schedule
-
 dateForTheWeek='2024-03-25'
 a=GetNHLSchedule(dateForTheWeek)
 filename = "c:\\Temp\\demoHockeySchedle.txt"
@@ -201,9 +210,13 @@ for i in range(8):
 dateHeader=[" "," ",daysForTheWeek[0],daysForTheWeek[1],daysForTheWeek[2],daysForTheWeek[3],daysForTheWeek[4],daysForTheWeek[5],daysForTheWeek[6],""]
 excelNhlSchedule.write_row_data(2, dateHeader)
 
+imagePath="C:\\Temp\\HockeyTeamLogos\\"
 row=4
 for i, value in enumerate(team.proTeamArray, start=00):
-    excelNhlSchedule.write_column_data(row, value[0])
+    excelNhlSchedule.set_row_height(row, 32)
+    excelNhlSchedule.write_column_data(row, 1, value[0])
+    imageName=imagePath+value[2]
+    excelNhlSchedule.insert_team_logo(row, "B", imageName)
     row+=1
 
 #Start writing text file scheduled contents
