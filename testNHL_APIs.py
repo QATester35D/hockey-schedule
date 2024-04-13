@@ -4,6 +4,8 @@ import os
 import sys
 from openpyxl import Workbook
 from openpyxl.styles import Font, Color, Alignment, Border, Side, PatternFill
+from openpyxl.drawing.image import Image
+from datetime import datetime, timedelta, date
 
 # from constants import proTeamArray
 
@@ -57,8 +59,9 @@ class ProTeams:
 
 #This class parses thru the API json and creates a text file of the info for the schedule
 class GetNHLSchedule:
-    def __init__(self):
-        self.nhlApi=requests.get('https://api-web.nhle.com/v1/schedule/2024-03-25')
+    def __init__(self,weekDate):
+        weekDateCall='https://api-web.nhle.com/v1/schedule/'+weekDate #Looks like: 'https://api-web.nhle.com/v1/schedule/2024-03-25'
+        self.nhlApi=requests.get(weekDateCall)
 
     def delete_file_if_exists(self, fname): #check for file, delete if exists to avoid duplicate schedules
         if os.path.exists(fname): # Check if the file exists
@@ -129,11 +132,13 @@ class WriteNHLSchedule:
         for i, value in enumerate(data, start=1):
             self.ws.cell(row=row, column=i, value=value)
 
+    def write_column_data(self, row, value):
+        self.ws.cell(row=row, column=1, value=value)
+
     def save_excel(self):
         self.workbook.save(self.filename)
 
     def updateExcelWithSchedule (self, fName):
-
         # Open the text file in read mode to process through the schedule list
         with open(fName, 'r') as file:
             line = file.readline() # Read the first line
@@ -157,7 +162,9 @@ teamImageName=teamRowInfo[2]
 print(f"The team info is:{teamRowInfo}")
 
 #Calling a class to parse thru the API json and creates a text file of the info for the schedule
-a=GetNHLSchedule()
+
+dateForTheWeek='2024-03-25'
+a=GetNHLSchedule(dateForTheWeek)
 filename = "c:\\Temp\\demoHockeySchedle.txt"
 a.getNhlGameInfo(filename)
 
@@ -169,8 +176,8 @@ daysOfWeekCount=len(daysOfWeek)
 loopPlusThree=daysOfWeekCount+3
 excelNhlSchedule=WriteNHLSchedule(xName)
 excelNhlSchedule.set_row_height(1, 15)
-excelNhlSchedule.set_column_width(1, 8, 11)  # Set columns A to H to width 10
-excelNhlSchedule.set_column_width(9,9, 12)
+excelNhlSchedule.set_column_width(1, 10, 12)  # Set columns A to H to width 10
+excelNhlSchedule.set_column_width(10, 11, 15)
 loopRange=loopPlusThree+1
 for i in range(loopRange):
     i+=1
@@ -179,11 +186,39 @@ for i in range(loopRange):
     excelNhlSchedule.set_cell_border(1, i)  # Add thin border to cell A1
     excelNhlSchedule.set_cell_fill_color(1, i, color='EEF8A6')  # Set light yellow fill color for cell A1
 dayOfWeekIndex=0
-excelNhlSchedule.write_row_data(1, daysOfWeek)  # Write data to row 2
+excelNhlSchedule.write_row_data(1, daysOfWeek)  # Write data to row 1
+ 
+#get each day (date) for the week, for the column header
+daysForTheWeek=[]
+for i in range(8):
+    if i==0:
+        daysForTheWeek=[dateForTheWeek]
+    else:
+        Begindate = date.fromisoformat(dateForTheWeek)
+        incremented_date = Begindate + timedelta(days=i)
+        daysForTheWeek.append(incremented_date)
+        print(daysForTheWeek[i])
+dateHeader=[" "," ",daysForTheWeek[0],daysForTheWeek[1],daysForTheWeek[2],daysForTheWeek[3],daysForTheWeek[4],daysForTheWeek[5],daysForTheWeek[6],""]
+excelNhlSchedule.write_row_data(2, dateHeader)
+
+row=4
+for i, value in enumerate(team.proTeamArray, start=00):
+    excelNhlSchedule.write_column_data(row, value[0])
+    row+=1
+
+#Start writing text file scheduled contents
+# f = open(filename, "rt") #r = read, t = text mode, but this really isn't needed since these are the defaults
+# for x in f:
+#     game=f.readline()
+#     for g in range(game[2]):
+#         excelNhlSchedule.write_row_data(3, daysOfWeek)
+# f.close()
+
 # excelNhlSchedule.workbook.close()
 excelNhlSchedule.save_excel()
 print("a")
 
+########################################################
 ########################################################
 #Old/original code follows - may use
 def createInitialExcelSetup():
