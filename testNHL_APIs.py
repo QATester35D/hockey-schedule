@@ -4,8 +4,9 @@ import os
 import sys
 from openpyxl import Workbook
 from openpyxl.styles import Font, Color, Alignment, Border, Side, PatternFill
-from openpyxl.drawing.image import Image
+from openpyxl.drawing.image import Image as ExcelImage
 from datetime import datetime, timedelta, date
+from PIL import Image
 
 # from constants import proTeamArray
 
@@ -98,8 +99,8 @@ class WriteNHLSchedule:
         self.filename = xName
         self.workbook = Workbook()
         self.ws = self.workbook.active
-        self.imageObj = Image()
-        self.img = self.imageObj
+        # self.imageObj = Image()
+        # self.Image = Image()
 
     def set_row_height(self, row, height):
         self.ws.row_dimensions[row].height = height
@@ -140,10 +141,10 @@ class WriteNHLSchedule:
     def insert_team_logo(self, row, column, imageName):
         row=str(row)
         cellName=column+row
-        # img = Image('reflorestasp.png')
-        # img.anchor('A1')
-        self.img.anchor(cellName)
-        self.ws.add_image(imageName,cellName)
+        from PIL import Image as PILImage #Pillow (PIL) was needed for dealing with images
+        pil_image = PILImage.open(imageName)
+        excel_image = ExcelImage(pil_image)
+        self.ws.add_image(excel_image, cellName)
 
     def save_excel(self):
         self.workbook.save(self.filename)
@@ -213,7 +214,7 @@ excelNhlSchedule.write_row_data(2, dateHeader)
 imagePath="C:\\Temp\\HockeyTeamLogos\\"
 row=4
 for i, value in enumerate(team.proTeamArray, start=00):
-    excelNhlSchedule.set_row_height(row, 32)
+    excelNhlSchedule.set_row_height(row, 35)
     excelNhlSchedule.write_column_data(row, 1, value[0])
     imageName=imagePath+value[2]
     excelNhlSchedule.insert_team_logo(row, "B", imageName)
@@ -229,102 +230,6 @@ for i, value in enumerate(team.proTeamArray, start=00):
 
 # excelNhlSchedule.workbook.close()
 excelNhlSchedule.save_excel()
-print("a")
-
-########################################################
-########################################################
-#Old/original code follows - may use
-def createInitialExcelSetup():
-    #One time setup - Create an new Excel file and add a worksheet.
-    workbook = xlsxwriter.Workbook("c:\\Temp\\hockeydemo.xlsx")
-    worksheet = workbook.add_worksheet()
-    cell_format = workbook.add_format({"bold": True}) # Add a bold format to use to highlight cells.
-    worksheet.set_column(0, 9, 20, cell_format) # 9 columns - Widen each column to make the text clearer.
-    daysOfWeek = ["MON","TUE","WED","THU","FRI","SAT","SUN"]
-    daysOfWeekCount=len(daysOfWeek)
-    loopPlusTwo=daysOfWeekCount+2
-    dayOfWeekIndex=0
-    for a in range(loopPlusTwo): #for row 0 (first row)
-        match a:
-            case 0:
-                worksheet.write(0, a, "Team Info") 
-            case a if a in range(1,8):
-                worksheet.write(0, a, daysOfWeek[dayOfWeekIndex])
-                dayOfWeekIndex+=1
-            case 8:
-                worksheet.write(0, a, "Game Count")
-    for a in range(loopPlusTwo): #for row 1 (second row)
-        match a:
-            case 0:
-                worksheet.write(1, a, "Team Name") 
-            case a if a in range(1,8):
-                worksheet.write(1, a, daysOfWeek[dayOfWeekIndex])
-                dayOfWeekIndex+=1
-            case 8:
-                worksheet.write(1, a, "Games For Week")
-    for a in range(loopPlusTwo):
-        match a:
-            case 0:
-                worksheet.write(2, a, "Team Name") 
-            case a if a in range(1,8):
-                worksheet.write(2, a, daysOfWeek[dayOfWeekIndex])
-                dayOfWeekIndex+=1
-            case 8:
-                worksheet.write(2, a, "Games For Week")
-    workbook.close()
-    return
-
-worksheetObject=createInitialExcelSetup()
-
-# Use the json module to load the string data into a dictionary
-r = requests.get('https://api-web.nhle.com/v1/schedule/2024-03-25')
-print(r.status_code)
-theJSON = json.loads(r.content)
-# nbrOfGames = theJSON["gameWeek"][0] #this works, saving for later
-for i in theJSON["gameWeek"]:
-    dateGameOfWeek = i["date"]
-    dayAbbrev = i["dayAbbrev"]
-    dayNumberOfGames = i["numberOfGames"]
-    for j in i["games"]:
-        awayTeamName = j["awayTeam"]["placeName"]["default"]
-        awayTeamAbbrev = j["awayTeam"]["abbrev"]
-        homeTeamName = j["homeTeam"]["placeName"]["default"]
-        homeTeamAbbrev = j["homeTeam"]["abbrev"]
-        print("Away Team is",awayTeamName,"and the Home Team is",homeTeamName)
-
-worksheet.write("A1", "Away Team") # Write some simple text.
-worksheet.write("A2", awayTeamName, bold) # Text with formatting.
-worksheet.set_row(1, 15) # Set row height
-worksheet.insert_image("A3", "C:\\Temp\\HockeyTeamLogos\\STL.png") # Insert an image.
-worksheet.set_row(2, 40)
-
-worksheet.set_column("A:A", 20) # Widen the first column to make the text clearer.
-worksheet.write("B1", "Home Team") # Write some simple text.
-worksheet.write("B2", homeTeamName, bold) # Text with formatting.
-worksheet.insert_image("B3", "C:\\Temp\\HockeyTeamLogos\\VGK.png") # Insert an image.
-
-workbook.close()
-
-#Figure out how to append to an existing file. Reopen it, append data and close
-#Then make classes with inheritance to write the different data out using the child class with different methods
-#
-#Figure out how to put the array in a separate initialization file
-
-
-# def main():
-#     # define a variable to hold the source URL
-    
-#     urlData = "https://api-web.nhle.com/v1/club-schedule/NJD/week/2024-03-18"
-
-#     # Open the URL and read the data
-#     webUrl = requests.URLRequired(urlData)
-#     # webUrl = urllib.request.urlopen(urlData)
-#     print ("result code: " + str(webUrl.getcode()))
-#     if (webUrl.getcode() == 200):
-#         data = webUrl.read()
-#         printResults(data)
-#     else:
-#         print("Received an error from the server, cannot print results", webUrl.getcode())
 
 # if __name__ == "__main__":
 #     main()
