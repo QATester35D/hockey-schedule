@@ -48,7 +48,7 @@ class ProTeams:
             ("SEA","Seattle Kraken","SEA.png")
         ]
 
-    def findTeamRowInArray (self, teamName):
+    def findTeamRowInTuple (self, teamName):
         #If abbrev is mixed case, check for a length of 3 (3=abbrev), then make value all uppercase
         if len(teamName) == 3:
             teamName=teamName.upper()
@@ -56,6 +56,16 @@ class ProTeams:
             for element in sublist:
                 if element == teamName:
                     return sublist
+        return None #if value not found
+    
+    def findIndexOfTeamInTuple (self, teamName):
+        if len(teamName) == 3:
+            teamName=teamName.upper()
+        for sublist in self.proTeamArray:
+            for element in sublist:
+                if element == teamName:
+                    teamIndex=self.proTeamArray.index(sublist)
+                    return teamIndex
         return None #if value not found
 
 #This class parses thru the API json and creates a text file of the info for the schedule
@@ -99,8 +109,6 @@ class WriteNHLSchedule:
         self.filename = xName
         self.workbook = Workbook()
         self.ws = self.workbook.active
-        # self.imageObj = Image()
-        # self.Image = Image()
 
     def set_row_height(self, row, height):
         self.ws.row_dimensions[row].height = height
@@ -163,7 +171,7 @@ class WriteNHLSchedule:
 #Calling the class to find a team by the abbrev or full name and return the tuple of info
 team=ProTeams()
 # teamRowInfo=team.findTeamRowInArray("Minnesota Wild") #can use abbrev too, returns a tuple of the team values
-teamRowInfo=team.findTeamRowInArray("Col") #can use abbrev too, returns a tuple of the team values
+teamRowInfo=team.findTeamRowInTuple("Col") #can use abbrev too, returns a tuple of the team values
 if teamRowInfo == None: #exit when no team was found; probably a typo
     print("No team was found, exiting program as there is nothing to process.")
     sys.exit()
@@ -175,7 +183,7 @@ print(f"The team info is:{teamRowInfo}")
 #Calling a class to parse thru the API json and creates a text file of the info for the schedule
 dateForTheWeek='2024-03-25'
 a=GetNHLSchedule(dateForTheWeek)
-filename = "c:\\Temp\\demoHockeySchedle.txt"
+filename = "c:\\Temp\\demoHockeySchedule.txt"
 a.getNhlGameInfo(filename)
 
 #Calling a class to create the excel file with the scheduled data
@@ -191,7 +199,7 @@ excelNhlSchedule.set_column_width(10, 11, 15)
 loopRange=loopPlusThree+1
 for i in range(loopRange):
     i+=1
-    excelNhlSchedule.set_cell_font(1, i, bold=True, color='090DF8')  # Set font bold and red color for cell A1
+    excelNhlSchedule.set_cell_font(1, i, bold=True, color='090DF8')  # Set font bold and blue color for cell A1
     excelNhlSchedule.set_cell_alignment(1, i, horizontal='center', vertical='center')  # Center align cell A1
     excelNhlSchedule.set_cell_border(1, i)  # Add thin border to cell A1
     excelNhlSchedule.set_cell_fill_color(1, i, color='EEF8A6')  # Set light yellow fill color for cell A1
@@ -207,28 +215,69 @@ for i in range(8):
         Begindate = date.fromisoformat(dateForTheWeek)
         incremented_date = Begindate + timedelta(days=i)
         daysForTheWeek.append(incremented_date)
-        print(daysForTheWeek[i])
+for j in range(11):
+    colNbr=j+1
+    excelNhlSchedule.set_cell_alignment(2, colNbr, horizontal='center', vertical='center')
+    excelNhlSchedule.set_cell_font(2, colNbr, bold=True, color='1fa180')
 dateHeader=[" "," ",daysForTheWeek[0],daysForTheWeek[1],daysForTheWeek[2],daysForTheWeek[3],daysForTheWeek[4],daysForTheWeek[5],daysForTheWeek[6],""]
 excelNhlSchedule.write_row_data(2, dateHeader)
 
+#Setup left columns for NHL teams
 imagePath="C:\\Temp\\HockeyTeamLogos\\"
 row=4
 for i, value in enumerate(team.proTeamArray, start=00):
     excelNhlSchedule.set_row_height(row, 35)
-    excelNhlSchedule.write_column_data(row, 1, value[0])
+    excelNhlSchedule.set_cell_alignment(row, 1, horizontal='center', vertical='center')
+    excelNhlSchedule.set_cell_font(row, 1, font_name="Georgia", bold=True, color='367ee7')
+    excelNhlSchedule.write_column_data(row, 1, value[0]) #Can use numbers too for column name
     imageName=imagePath+value[2]
     excelNhlSchedule.insert_team_logo(row, "B", imageName)
     row+=1
 
-#Start writing text file scheduled contents
-# f = open(filename, "rt") #r = read, t = text mode, but this really isn't needed since these are the defaults
-# for x in f:
-#     game=f.readline()
-#     for g in range(game[2]):
-#         excelNhlSchedule.write_row_data(3, daysOfWeek)
-# f.close()
+#Write the schedule now. Find the matching team and column to write to
+#Look up the teams and fill it in on the spreadsheet - basically twice for each team
+##Read text file line by line (loop)
+f = open(filename)
+rowOffset=4 #to get positioned, first team in spreadsheet starts at row 4
+col=2
+colLetter='B'
+for x in f:
+    col+=1
+    colLetter=chr (ord (colLetter) + 1) #columns are letters, increment the column to write to the correct one starting with C
+    #Parse line: date, day, nbr of games, away, home
+    gameInfo= x.split(",") #2024-03-25,MON,2,VGK,STL
+    #Get info setup 
+    awayTeam=gameInfo[3]
+    homeTeam=gameInfo[4]
+    homeTeam=homeTeam[0:3] #returning the first 3 characters to avoid the \n
+    awayTeamRowInfo=team.findTeamRowInTuple(awayTeam) #team name abbrev in, returns "BOS","Boston Bruins","BOS.png"
+    if awayTeamRowInfo == None: #exit when no team was found; probably a typo
+        print("No Away team was found, exiting program as there is a problem; possibly a typo on team name.")
+        sys.exit()
+    homeTeamRowInfo=team.findTeamRowInTuple(homeTeam) #team name abbrev in, returns "BOS","Boston Bruins","BOS.png"
+    if homeTeamRowInfo == None: #exit when no team was found; probably a typo
+        print("No Home team was found, exiting program as there is a problem; possibly a typo on team name.")
+        sys.exit()
+    #Process the matchups - first the Away Team appears in the list
+    #Find the Away Team POSITION in the spreadsheet, then write/insert the HOME Team logo
+    #first team is always Away Team gameInfo[3]
+    indexOfTeam=team.findIndexOfTeamInTuple(awayTeam) #using this to figure out where in the spreadsheet the teams are located
+    rowPosition=indexOfTeam+rowOffset
+    excelNhlSchedule.set_cell_alignment(rowPosition, col, horizontal='center', vertical='center')
+    excelNhlSchedule.set_cell_fill_color(rowPosition, col, color='4edc9c')
+    #Now insert the Home Team image
+    imageName=imagePath+homeTeamRowInfo[2] #name of team image
+    excelNhlSchedule.insert_team_logo(rowPosition, colLetter, imageName)
+    #Now doing the other combo of the matchup
+    indexOfTeam=team.findIndexOfTeamInTuple(homeTeam) #using this to figure out where in the spreadsheet the teams are located
+    rowPosition=indexOfTeam+rowOffset
+    excelNhlSchedule.set_cell_alignment(rowPosition, col, horizontal='center', vertical='center')
+    excelNhlSchedule.set_cell_fill_color(rowPosition, col, color='ff1919')
+    #Now insert the Away Team image
+    imageName=imagePath+awayTeamRowInfo[2] #name of team image
+    excelNhlSchedule.insert_team_logo(rowPosition, colLetter, imageName)
+f.close()
 
-# excelNhlSchedule.workbook.close()
 excelNhlSchedule.save_excel()
 
 # if __name__ == "__main__":
