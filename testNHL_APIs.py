@@ -21,19 +21,19 @@ class ProTeams:
             ("DET","Detroit Red Wings","DET.png"),
             ("EDM","Edmonton Oilers","EDM.png"),
             ("CAR","Carolina Hurricanes","CAR.png"),
-            ("LA","Los Angeles Kings","LA.png"),
+            ("LAK","Los Angeles Kings","LA.png"),
             ("DAL","Dallas Stars","DAL.png"),
             ("MTL","Montréal Canadiens","MTL.png"),
-            ("NJ","New Jersey Devils","NJ.png"),
+            ("NJD","New Jersey Devils","NJ.png"),
             ("NYI","New York Islanders","NYI.png"),
             ("NYR","New York Rangers","NYR.png"),
             ("OTT","Ottawa Senators","OTT.png"),
             ("PHI","Philadelphia Flyers","PHI.png"),
             ("PIT","Pittsburgh Penguins","PIT.png"),
             ("COL","Colorado Avalanche","COL.png"),
-            ("SJ","San Jose Sharks","SJ.png"),
+            ("SJS","San Jose Sharks","SJ.png"),
             ("STL","St. Louis Blues","STL.png"),
-            ("TB","Tampa Bay Lightning","TB.png"),
+            ("TBL","Tampa Bay Lightning","TB.png"),
             ("TOR","Toronto Maple Leafs","TOR.png"),
             ("VAN","Vancouver Canucks","VAN.png"),
             ("WSH","Washington Capitals","WSH.png"),
@@ -236,48 +236,66 @@ for i, value in enumerate(team.proTeamArray, start=00):
 
 #Write the schedule now. Find the matching team and column to write to
 #Look up the teams and fill it in on the spreadsheet - basically twice for each team
-##Read text file line by line (loop)
-f = open(filename)
 rowOffset=4 #to get positioned, first team in spreadsheet starts at row 4
 col=2
 colLetter='B'
-for x in f:
-    col+=1
-    colLetter=chr (ord (colLetter) + 1) #columns are letters, increment the column to write to the correct one starting with C
-    #Parse line: date, day, nbr of games, away, home
-    gameInfo= x.split(",") #2024-03-25,MON,2,VGK,STL
-    #Get info setup 
-    awayTeam=gameInfo[3]
-    homeTeam=gameInfo[4]
-    homeTeam=homeTeam[0:3] #returning the first 3 characters to avoid the \n
-    awayTeamRowInfo=team.findTeamRowInTuple(awayTeam) #team name abbrev in, returns "BOS","Boston Bruins","BOS.png"
-    if awayTeamRowInfo == None: #exit when no team was found; probably a typo
-        print("No Away team was found, exiting program as there is a problem; possibly a typo on team name.")
-        sys.exit()
-    homeTeamRowInfo=team.findTeamRowInTuple(homeTeam) #team name abbrev in, returns "BOS","Boston Bruins","BOS.png"
-    if homeTeamRowInfo == None: #exit when no team was found; probably a typo
-        print("No Home team was found, exiting program as there is a problem; possibly a typo on team name.")
-        sys.exit()
-    #Process the matchups - first the Away Team appears in the list
-    #Find the Away Team POSITION in the spreadsheet, then write/insert the HOME Team logo
-    #first team is always Away Team gameInfo[3]
-    indexOfTeam=team.findIndexOfTeamInTuple(awayTeam) #using this to figure out where in the spreadsheet the teams are located
-    rowPosition=indexOfTeam+rowOffset
-    excelNhlSchedule.set_cell_alignment(rowPosition, col, horizontal='center', vertical='center')
-    excelNhlSchedule.set_cell_fill_color(rowPosition, col, color='4edc9c')
-    #Now insert the Home Team image
-    imageName=imagePath+homeTeamRowInfo[2] #name of team image
-    excelNhlSchedule.insert_team_logo(rowPosition, colLetter, imageName)
-    #Now doing the other combo of the matchup
-    indexOfTeam=team.findIndexOfTeamInTuple(homeTeam) #using this to figure out where in the spreadsheet the teams are located
-    rowPosition=indexOfTeam+rowOffset
-    excelNhlSchedule.set_cell_alignment(rowPosition, col, horizontal='center', vertical='center')
-    excelNhlSchedule.set_cell_fill_color(rowPosition, col, color='ff1919')
-    #Now insert the Away Team image
-    imageName=imagePath+awayTeamRowInfo[2] #name of team image
-    excelNhlSchedule.insert_team_logo(rowPosition, colLetter, imageName)
-f.close()
+firstRetrieval="True"
+f = open(filename,'r')
+# f.seek(-1,2)     # go to the file end.
+# eof = f.tell()   # get the end of file location
+# f.seek(0,0)      # go back to file beginning
+while True:
+        x=f.readline()
+        if not x:
+            print("EOF reached")
+            break
+        #Parse line: date, day, nbr of games, away, home
+        gameInfo= x.split(",") #2024-03-25,MON,2,VGK,STL
+        if firstRetrieval=="True":
+            firstRetrieval="False"
+            currentGameDate=gameInfo[0]
+            nextGameDate=currentGameDate
+            col+=1
+            colLetter=chr (ord (colLetter) + 1) #columns are letters, increment the column to write to the correct one starting with C
+        else:
+            nextGameDate=gameInfo[0]
+        
+        if currentGameDate!=nextGameDate:
+            col+=1
+            colLetter=chr (ord (colLetter) + 1) #columns are letters, increment the column to write to the correct one starting with C
 
+        #Get info setup 
+        awayTeam=gameInfo[3]
+        homeTeam=gameInfo[4]
+        homeTeam=homeTeam[0:3] #returning the first 3 characters to avoid the \n
+        awayTeamRowInfo=team.findTeamRowInTuple(awayTeam) #team name abbrev in, returns "BOS","Boston Bruins","BOS.png"
+        if awayTeamRowInfo == None: #exit when no team was found; probably a typo
+            print("No Away team was found, exiting program as there is a problem; possibly a typo on team name.")
+            sys.exit()
+        homeTeamRowInfo=team.findTeamRowInTuple(homeTeam) #team name abbrev in, returns "BOS","Boston Bruins","BOS.png"
+        if homeTeamRowInfo == None: #exit when no team was found; probably a typo
+            print("No Home team was found, exiting program as there is a problem; possibly a typo on team name.")
+            sys.exit()
+        #Process the matchups - first the Away Team appears in the list
+        #Find the Away Team POSITION in the spreadsheet, then write/insert the HOME Team logo
+        #first team is always Away Team gameInfo[3]
+        indexOfTeam=team.findIndexOfTeamInTuple(awayTeam) #using this to figure out where in the spreadsheet the teams are located
+        rowPosition=indexOfTeam+rowOffset
+        excelNhlSchedule.set_cell_alignment(rowPosition, col, horizontal='center', vertical='center')
+        excelNhlSchedule.set_cell_fill_color(rowPosition, col, color='4edc9c')
+        #Now insert the Home Team image
+        imageName=imagePath+homeTeamRowInfo[2] #name of team image
+        excelNhlSchedule.insert_team_logo(rowPosition, colLetter, imageName)
+        #Now doing the other combo of the matchup
+        indexOfTeam=team.findIndexOfTeamInTuple(homeTeam) #using this to figure out where in the spreadsheet the teams are located
+        rowPosition=indexOfTeam+rowOffset
+        excelNhlSchedule.set_cell_alignment(rowPosition, col, horizontal='center', vertical='center')
+        excelNhlSchedule.set_cell_fill_color(rowPosition, col, color='ff1919')
+        #Now insert the Away Team image
+        imageName=imagePath+awayTeamRowInfo[2] #name of team image
+        excelNhlSchedule.insert_team_logo(rowPosition, colLetter, imageName)
+
+f.close()
 excelNhlSchedule.save_excel()
 
 # if __name__ == "__main__":
