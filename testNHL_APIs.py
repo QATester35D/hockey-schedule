@@ -83,7 +83,6 @@ class GetNHLSchedule:
 
     def getNhlGameInfo(self, fname):
         r=self.nhlApi
-        print(r.status_code)
         if r.status_code != 200:
             print ("Problem connecting with NHL API")
             exit
@@ -169,10 +168,10 @@ teamRowInfo=team.findTeamRowInTuple("Col") #can use abbrev too, returns a tuple 
 if teamRowInfo == None: #exit when no team was found; probably a typo
     print("No team was found, exiting program as there is nothing to process.")
     sys.exit()
+
 teamAbbrevName=teamRowInfo[0]
 teamFullName=teamRowInfo[1]
 teamImageName=teamRowInfo[2]
-print(f"The team info is:{teamRowInfo}")
 
 #Calling a class to parse thru the API json and creates a text file of the info for the schedule
 dateForTheWeek='2024-03-25'
@@ -197,6 +196,7 @@ for i in range(loopRange):
     excelNhlSchedule.set_cell_alignment(1, i, horizontal='center', vertical='center')  # Center align cell A1
     excelNhlSchedule.set_cell_border(1, i)  # Add thin border to cell A1
     excelNhlSchedule.set_cell_fill_color(1, i, color='EEF8A6')  # Set light yellow fill color for cell A1
+
 dayOfWeekIndex=0
 excelNhlSchedule.write_row_data(1, daysOfWeek)  # Write data to row 1
  
@@ -213,6 +213,7 @@ for j in range(11):
     colNbr=j+1
     excelNhlSchedule.set_cell_alignment(2, colNbr, horizontal='center', vertical='center')
     excelNhlSchedule.set_cell_font(2, colNbr, bold=True, color='1fa180')
+
 dateHeader=[" "," ",daysForTheWeek[0],daysForTheWeek[1],daysForTheWeek[2],daysForTheWeek[3],daysForTheWeek[4],daysForTheWeek[5],daysForTheWeek[6],""]
 excelNhlSchedule.write_row_data(2, dateHeader)
 
@@ -246,7 +247,6 @@ while True:
         x=f.readline()
         if not x:
             print("EOF reached")
-            # f.seek(0,0)
             f.close()
             break
         #Parse line: date, day, nbr of games, away, home
