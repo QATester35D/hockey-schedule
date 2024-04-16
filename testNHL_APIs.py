@@ -160,15 +160,6 @@ class WriteNHLSchedule:
     def close_excel(self):
         self.workbook.close(self.filename)
 
-    # def updateExcelWithSchedule (self, fName):
-    #     # Open the text file in read mode to process through the schedule list
-    #     with open(fName, 'r') as file:
-    #         line = file.readline() # Read the first line
-    #         while line: # Continue reading lines until reaching end of file
-    #             # Process the current line (e.g., print it)
-    #             print(line.strip())  # .strip() removes trailing newline characters
-    #             line = file.readline() # Read the next line
-
 #######
 #Beginning of main code
 #Calling the class to find a team by the abbrev or full name and return the tuple of info
@@ -237,6 +228,12 @@ for i, value in enumerate(team.proTeamArray, start=00):
     excelNhlSchedule.insert_team_logo(row, "B", imageName)
     row+=1
 
+#Cell color fill for the empty cells not used
+cellFill=[1,2,10]
+for x in range(2, 4):
+    for i, value in enumerate(cellFill, start=0):
+        excelNhlSchedule.set_cell_fill_color(x, cellFill[i], color='c0c0c0')
+
 #Write the schedule now. Find the matching team and column to write to
 #Look up the teams and fill it in on the spreadsheet - basically twice for each team
 rowOffset=4 #to get positioned, first team in spreadsheet starts at row 4
@@ -244,23 +241,17 @@ col=2
 colLetter='B'
 firstRetrieval="True"
 f = open(filename,'r')
-# f.seek(-1,2)     # go to the file end.
-# eof = f.tell()   # get the end of file location
-# f.seek(0,0)      # go back to file beginning
 i=0
 while True:
         x=f.readline()
         if not x:
             print("EOF reached")
-            f.seek(0,0)
-            # f.readline()
-            # excelNhlSchedule.close_excel()
-            # excelNhlSchedule.save_excel()
+            # f.seek(0,0)
             f.close()
-            # excelNhlSchedule.set_cell_fill_color(2, 'A', color='fefcfc') #set cell color to white
             break
         #Parse line: date, day, nbr of games, away, home
         gameInfo= x.split(",") #2024-03-25,MON,2,VGK,STL
+        #These if statements are to control the logic of what column to write to
         if firstRetrieval=="True":
             firstRetrieval="False"
             currentGameDate=gameInfo[0]
@@ -268,6 +259,10 @@ while True:
             i+=1
             col+=1
             colLetter=chr (ord (colLetter) + 1) #columns are letters, increment the column to write to the correct one starting with C
+            excelNhlSchedule.set_cell_font(3, col, bold=True, color='773631')  # Set font bold and blue color for cell A1
+            excelNhlSchedule.set_cell_alignment(3, col, horizontal='center', vertical='center')  # Center align cell A1
+            excelNhlSchedule.set_cell_fill_color(3, col, color='a5ddcc')  # Set light yellow fill color for cell A1
+            excelNhlSchedule.write_column_data(3, col, gameInfo[2])
         else:
             if i<=int(gameInfo[2]):
                 i+=1
