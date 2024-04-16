@@ -157,14 +157,17 @@ class WriteNHLSchedule:
     def save_excel(self):
         self.workbook.save(self.filename)
 
-    def updateExcelWithSchedule (self, fName):
-        # Open the text file in read mode to process through the schedule list
-        with open(fName, 'r') as file:
-            line = file.readline() # Read the first line
-            while line: # Continue reading lines until reaching end of file
-                # Process the current line (e.g., print it)
-                print(line.strip())  # .strip() removes trailing newline characters
-                line = file.readline() # Read the next line
+    def close_excel(self):
+        self.workbook.close(self.filename)
+
+    # def updateExcelWithSchedule (self, fName):
+    #     # Open the text file in read mode to process through the schedule list
+    #     with open(fName, 'r') as file:
+    #         line = file.readline() # Read the first line
+    #         while line: # Continue reading lines until reaching end of file
+    #             # Process the current line (e.g., print it)
+    #             print(line.strip())  # .strip() removes trailing newline characters
+    #             line = file.readline() # Read the next line
 
 #######
 #Beginning of main code
@@ -244,10 +247,17 @@ f = open(filename,'r')
 # f.seek(-1,2)     # go to the file end.
 # eof = f.tell()   # get the end of file location
 # f.seek(0,0)      # go back to file beginning
+i=0
 while True:
         x=f.readline()
         if not x:
             print("EOF reached")
+            f.seek(0,0)
+            # f.readline()
+            # excelNhlSchedule.close_excel()
+            # excelNhlSchedule.save_excel()
+            f.close()
+            # excelNhlSchedule.set_cell_fill_color(2, 'A', color='fefcfc') #set cell color to white
             break
         #Parse line: date, day, nbr of games, away, home
         gameInfo= x.split(",") #2024-03-25,MON,2,VGK,STL
@@ -255,10 +265,13 @@ while True:
             firstRetrieval="False"
             currentGameDate=gameInfo[0]
             nextGameDate=currentGameDate
+            i+=1
             col+=1
             colLetter=chr (ord (colLetter) + 1) #columns are letters, increment the column to write to the correct one starting with C
         else:
-            nextGameDate=gameInfo[0]
+            if i<=int(gameInfo[2]):
+                i+=1
+                nextGameDate=gameInfo[0]
         
         if currentGameDate!=nextGameDate:
             col+=1
@@ -294,8 +307,12 @@ while True:
         #Now insert the Away Team image
         imageName=imagePath+awayTeamRowInfo[2] #name of team image
         excelNhlSchedule.insert_team_logo(rowPosition, colLetter, imageName)
-
-f.close()
+        if i==int(gameInfo[2]):
+            i=0
+            firstRetrieval="True"
+        elif i>int(gameInfo[2]):
+            sys.exit("Problem with date count/comparison, got larger, exiting out.")
+        
 excelNhlSchedule.save_excel()
 
 # if __name__ == "__main__":
