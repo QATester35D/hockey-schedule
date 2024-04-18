@@ -218,23 +218,22 @@ a.getNhlGameInfo(filename)
 
 #Calling a class to create the excel file with the scheduled data
 xName="c:\\Temp\\hockeydemo.xlsx"
-daysOfWeek = ["Abbrev","Team Logo","MON","TUE","WED","THU","FRI","SAT","SUN","Game Count"]
-daysOfWeekCount=len(daysOfWeek)
-loopPlusThree=daysOfWeekCount+3
+rowOneHeader = ["Abbrev","Team Logo","MON","TUE","WED","THU","FRI","SAT","SUN","Game Count"]
+rowOneHeaderCount=len(rowOneHeader)
 excelNhlSchedule=WriteNHLSchedule(xName)
 excelNhlSchedule.set_row_height(1, 15)
 excelNhlSchedule.set_column_width(1, 10, 12)  # Set columns A to H to width 10
 excelNhlSchedule.set_column_width(10, 11, 15)
-loopRange=loopPlusThree+1
-for i in range(loopRange):
-    i+=1
+i=1
+for a in range(rowOneHeaderCount):
     excelNhlSchedule.set_cell_font(1, i, bold=True, color='090DF8')  # Set font bold and blue color for cell A1
     excelNhlSchedule.set_cell_alignment(1, i, horizontal='center', vertical='center')  # Center align cell A1
     excelNhlSchedule.set_cell_border(1, i)  # Add thin border to cell A1
     excelNhlSchedule.set_cell_fill_color(1, i, color='EEF8A6')  # Set light yellow fill color for cell A1
+    i+=1
 
 dayOfWeekIndex=0
-excelNhlSchedule.write_row_data(1, daysOfWeek)  # Write data to row 1
+excelNhlSchedule.write_row_data(1, rowOneHeader)  # Write data to row 1
  
 #get each day (date) for the week, for the column header
 daysForTheWeek=[]
