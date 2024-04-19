@@ -3,6 +3,7 @@ import json
 import os
 import sys
 import proTeams
+import teamGameCount
 from openpyxl import Workbook
 from openpyxl.styles import Font, Color, Alignment, Border, Side, PatternFill
 from openpyxl.drawing.image import Image as ExcelImage
@@ -100,56 +101,8 @@ class WriteNHLSchedule:
     def close_excel(self):
         self.workbook.close(self.filename)
 
-#Create a dictionary that will keep track of a team's game count for the week
-class TeamGameCount:
-    def __init__(self):
-        self.teamListCount = {
-            "BOS": 0,
-            "BUF": 0,
-            "CGY": 0,
-            "CHI": 0,
-            "DET": 0,
-            "EDM": 0,
-            "CAR": 0,
-            "LAK": 0,
-            "DAL": 0,
-            "MTL": 0,
-            "NJD": 0,
-            "NYI": 0,
-            "NYR": 0,
-            "OTT": 0,
-            "PHI": 0,
-            "PIT": 0,
-            "COL": 0,
-            "SJS": 0,
-            "STL": 0,
-            "TBL": 0,
-            "TOR": 0,
-            "VAN": 0,
-            "WSH": 0,
-            "ARI": 0,
-            "ANA": 0,
-            "FLA": 0,
-            "NSH": 0,
-            "WPG": 0,
-            "CBJ": 0,
-            "MIN": 0,
-            "VGK": 0,
-            "SEA": 0
-        }
-
-    def teamGameCountIncrement(self, key):
-        if key in self.teamListCount:
-            self.teamListCount[key] += 1
-        else:
-            print(f"Key '{key}' not found.")
-
-    def teamGameCountRetrieval(self, key):
-        return self.teamListCount.get(key)
-
 #######
 #Beginning of main code
-# team=ProTeams() #Class to find a team by the abbrev or full name and return the tuple of info
 
 #Calling a class to parse thru the API json and creates a text file of the info for the schedule
 dateForTheWeek='2024-04-08'
@@ -213,7 +166,6 @@ for x in range(2, 4):
 
 #Write the schedule now. Find the matching team and column to write to
 #Look up the teams and fill it in on the spreadsheet - basically twice for each team
-teamGameCnt = TeamGameCount() #used to keep track of total games for the week by team
 rowOffset=4 #to get positioned, first team in spreadsheet starts at row 4
 col=2
 colLetter='B'
@@ -271,7 +223,7 @@ while True:
         #Now insert the Home Team image
         imageName=imagePath+homeTeamRowInfo[2] #name of team image
         excelNhlSchedule.insert_team_logo(rowPosition, colLetter, imageName)
-        teamGameCnt.teamGameCountIncrement(awayTeam) 
+        teamGameCount.teamGameCountIncrement(awayTeam) 
         #Now doing the other combo of the matchup
         indexOfTeam=proTeams.findIndexOfTeamInTuple(homeTeam) #using this to figure out where in the spreadsheet the teams are located
         rowPosition=indexOfTeam+rowOffset
@@ -280,7 +232,7 @@ while True:
         #Now insert the Away Team image
         imageName=imagePath+awayTeamRowInfo[2] #name of team image
         excelNhlSchedule.insert_team_logo(rowPosition, colLetter, imageName)
-        teamGameCnt.teamGameCountIncrement(homeTeam)
+        teamGameCount.teamGameCountIncrement(homeTeam)
         if i==int(gameInfo[2]):
             i=0
             firstRetrieval="True"
@@ -290,13 +242,10 @@ while True:
 for i, value in enumerate(proTeams.proTeamTuple, start=00):
     indexOfTeam=proTeams.findIndexOfTeamInTuple(value[0]) #using this to figure out where in the spreadsheet the teams are located
     rowPosition=indexOfTeam+rowOffset
-    gameCount=teamGameCnt.teamGameCountRetrieval(value[0])
+    gameCount=teamGameCount.teamGameCountRetrieval(value[0])
     excelNhlSchedule.set_cell_font(rowPosition, 10, bold=True, color='17020e')
     excelNhlSchedule.set_cell_alignment(rowPosition, 10, horizontal='center', vertical='center')
     excelNhlSchedule.set_cell_fill_color(rowPosition, 10, color='0fcbfd')
     excelNhlSchedule.write_column_data(rowPosition, 10, gameCount)
 
 excelNhlSchedule.save_excel()
-
-# if __name__ == "__main__":
-#     main()
