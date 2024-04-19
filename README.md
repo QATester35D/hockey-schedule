@@ -10,3 +10,26 @@ Requirements: Include the following items (but not limited to):
  - Insert team logos into the spreadsheet
 
 Output: The output will be a spreadsheet that shows who each team is going to play for the week specified in the API call.
+
+Since this was a self-defined project for training purposes, the following programming elements were implemented:
+- Importing modules
+- Creating modules
+- Class structure
+- Methods
+- if/else
+- if/elif
+- Working with text files - file operations
+- for loop
+- API call
+- json structure
+- lists
+- tuple
+- Dictionary
+- Working with excel spreadsheets using openpyxl
+- Date functions
+- ranges
+- variables
+- enumerate
+- while loop
+- break
+- exit
