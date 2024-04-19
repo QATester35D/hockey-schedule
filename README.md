@@ -12,7 +12,7 @@ Requirements: Include the following items (but not limited to):
 Output: The output will be a spreadsheet that shows who each team is going to play for the week specified in the API call.
 
 Since this was a self-defined project for training purposes, the following programming elements were implemented:
-- Importing modules
+- Importing modules 
 - Creating modules
 - Class structure
 - Methods
