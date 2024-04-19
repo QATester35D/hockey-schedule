@@ -2,71 +2,12 @@ import requests
 import json
 import os
 import sys
+import proTeams
 from openpyxl import Workbook
 from openpyxl.styles import Font, Color, Alignment, Border, Side, PatternFill
 from openpyxl.drawing.image import Image as ExcelImage
 from datetime import datetime, timedelta, date
 from PIL import Image
-
-# from constants import proTeamTuple
-
-#A class to find a team by the abbrev or full name and return the tuple of info for use later
-class ProTeams:
-    def __init__(self):
-        # self.proTeamInfo = {}
-        self.proTeamTuple = [("BOS","Boston Bruins","BOS.png"),
-            ("BUF","Buffalo Sabres","BUF.png"),
-            ("CGY","Calgary Flames","CGY.png"),
-            ("CHI","Chicago Blackhawks","CHI.png"),
-            ("DET","Detroit Red Wings","DET.png"),
-            ("EDM","Edmonton Oilers","EDM.png"),
-            ("CAR","Carolina Hurricanes","CAR.png"),
-            ("LAK","Los Angeles Kings","LA.png"),
-            ("DAL","Dallas Stars","DAL.png"),
-            ("MTL","Montréal Canadiens","MTL.png"),
-            ("NJD","New Jersey Devils","NJ.png"),
-            ("NYI","New York Islanders","NYI.png"),
-            ("NYR","New York Rangers","NYR.png"),
-            ("OTT","Ottawa Senators","OTT.png"),
-            ("PHI","Philadelphia Flyers","PHI.png"),
-            ("PIT","Pittsburgh Penguins","PIT.png"),
-            ("COL","Colorado Avalanche","COL.png"),
-            ("SJS","San Jose Sharks","SJ.png"),
-            ("STL","St. Louis Blues","STL.png"),
-            ("TBL","Tampa Bay Lightning","TB.png"),
-            ("TOR","Toronto Maple Leafs","TOR.png"),
-            ("VAN","Vancouver Canucks","VAN.png"),
-            ("WSH","Washington Capitals","WSH.png"),
-            ("ARI","Arizona Coyotes","ARI.png"),
-            ("ANA","Anaheim Ducks","ANA.png"),
-            ("FLA","Florida Panthers","FLA.png"),
-            ("NSH","Nashville Predators","NSH.png"),
-            ("WPG","Winnipeg Jets","WPG.png"),
-            ("CBJ","Columbus Blue Jackets","CBJ.png"),
-            ("MIN","Minnesota Wild","MIN.png"),
-            ("VGK","Vegas Golden Knights","VGK.png"),
-            ("SEA","Seattle Kraken","SEA.png")
-        ]
-
-    def findTeamRowInTuple (self, teamName):
-        #If abbrev is mixed case, check for a length of 3 (3=abbrev), then make value all uppercase
-        if len(teamName) == 3:
-            teamName=teamName.upper()
-        for sublist in self.proTeamTuple:
-            for element in sublist:
-                if element == teamName:
-                    return sublist
-        return None #if value not found
-    
-    def findIndexOfTeamInTuple (self, teamName):
-        if len(teamName) == 3:
-            teamName=teamName.upper()
-        for sublist in self.proTeamTuple:
-            for element in sublist:
-                if element == teamName:
-                    teamIndex=self.proTeamTuple.index(sublist)
-                    return teamIndex
-        return None #if value not found
 
 #This class parses thru the API json and creates a text file of the info for the schedule
 class GetNHLSchedule:
@@ -208,7 +149,7 @@ class TeamGameCount:
 
 #######
 #Beginning of main code
-team=ProTeams() #Class to find a team by the abbrev or full name and return the tuple of info
+# team=ProTeams() #Class to find a team by the abbrev or full name and return the tuple of info
 
 #Calling a class to parse thru the API json and creates a text file of the info for the schedule
 dateForTheWeek='2024-04-08'
@@ -255,7 +196,7 @@ excelNhlSchedule.write_row_data(2, dateHeader)
 #Setup left columns for NHL teams
 imagePath="C:\\Temp\\HockeyTeamLogos\\"
 row=4
-for i, value in enumerate(team.proTeamTuple, start=00):
+for i, value in enumerate(proTeams.proTeamTuple, start=00):
     excelNhlSchedule.set_row_height(row, 35)
     excelNhlSchedule.set_cell_alignment(row, 1, horizontal='center', vertical='center')
     excelNhlSchedule.set_cell_font(row, 1, font_name="Georgia", bold=True, color='367ee7')
@@ -312,18 +253,18 @@ while True:
         awayTeam=gameInfo[3]
         homeTeam=gameInfo[4]
         homeTeam=homeTeam[0:3] #returning the first 3 characters to avoid the \n
-        awayTeamRowInfo=team.findTeamRowInTuple(awayTeam) #team name abbrev in, returns "BOS","Boston Bruins","BOS.png"
+        awayTeamRowInfo=proTeams.findTeamRowInTuple(awayTeam) #team name abbrev in, returns "BOS","Boston Bruins","BOS.png"
         if awayTeamRowInfo == None: #exit when no team was found; probably a typo
             print("No Away team was found, exiting program as there is a problem; possibly a typo on team name.")
             sys.exit()
-        homeTeamRowInfo=team.findTeamRowInTuple(homeTeam) #team name abbrev in, returns "BOS","Boston Bruins","BOS.png"
+        homeTeamRowInfo=proTeams.findTeamRowInTuple(homeTeam) #team name abbrev in, returns "BOS","Boston Bruins","BOS.png"
         if homeTeamRowInfo == None: #exit when no team was found; probably a typo
             print("No Home team was found, exiting program as there is a problem; possibly a typo on team name.")
             sys.exit()
         #Process the matchups - first the Away Team appears in the list
         #Find the Away Team POSITION in the spreadsheet, then write/insert the HOME Team logo
         #first team is always Away Team gameInfo[3]
-        indexOfTeam=team.findIndexOfTeamInTuple(awayTeam) #using this to figure out where in the spreadsheet the teams are located
+        indexOfTeam=proTeams.findIndexOfTeamInTuple(awayTeam) #using this to figure out where in the spreadsheet the teams are located
         rowPosition=indexOfTeam+rowOffset
         excelNhlSchedule.set_cell_alignment(rowPosition, col, horizontal='center', vertical='center')
         excelNhlSchedule.set_cell_fill_color(rowPosition, col, color='4edc9c')
@@ -332,7 +273,7 @@ while True:
         excelNhlSchedule.insert_team_logo(rowPosition, colLetter, imageName)
         teamGameCnt.teamGameCountIncrement(awayTeam) 
         #Now doing the other combo of the matchup
-        indexOfTeam=team.findIndexOfTeamInTuple(homeTeam) #using this to figure out where in the spreadsheet the teams are located
+        indexOfTeam=proTeams.findIndexOfTeamInTuple(homeTeam) #using this to figure out where in the spreadsheet the teams are located
         rowPosition=indexOfTeam+rowOffset
         excelNhlSchedule.set_cell_alignment(rowPosition, col, horizontal='center', vertical='center')
         excelNhlSchedule.set_cell_fill_color(rowPosition, col, color='ff1919')
@@ -346,8 +287,8 @@ while True:
         elif i>int(gameInfo[2]):
             sys.exit("Problem with date count/comparison, got larger, exiting out.")
 
-for i, value in enumerate(team.proTeamTuple, start=00):
-    indexOfTeam=team.findIndexOfTeamInTuple(value[0]) #using this to figure out where in the spreadsheet the teams are located
+for i, value in enumerate(proTeams.proTeamTuple, start=00):
+    indexOfTeam=proTeams.findIndexOfTeamInTuple(value[0]) #using this to figure out where in the spreadsheet the teams are located
     rowPosition=indexOfTeam+rowOffset
     gameCount=teamGameCnt.teamGameCountRetrieval(value[0])
     excelNhlSchedule.set_cell_font(rowPosition, 10, bold=True, color='17020e')
