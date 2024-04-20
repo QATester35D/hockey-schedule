@@ -147,7 +147,8 @@ dateHeader=[" "," ",daysForTheWeek[0],daysForTheWeek[1],daysForTheWeek[2],daysFo
 excelNhlSchedule.write_row_data(2, dateHeader)
 
 #Setup left columns for NHL teams
-imagePath="C:\\Temp\\HockeyTeamLogos\\"
+# imagePath="C:\\Temp\\HockeyTeamLogos\\"
+imagePath="./hockeyTeamLogos/"
 row=4
 for i, value in enumerate(proTeams.proTeamTuple, start=00):
     excelNhlSchedule.set_row_height(row, 35)
