@@ -1,3 +1,4 @@
+#List of tuples
 #  Slot, Position,  Player,     Team,  Status, PTS20232024,Line  (note: "PTS20232024" is points from the 2023-2024 season)
 #"Starter","F","Connor McDavid","Edm","Healthy","250.9","1"
 fantasyRosterTuple = [("Starter","F","Connor McDavid","Edm","Healthy","250.9","1"),
