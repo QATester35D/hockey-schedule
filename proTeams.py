@@ -30,7 +30,8 @@ proTeamTuple = [("BOS","Boston Bruins","BOS.png"),
     ("CBJ","Columbus Blue Jackets","CBJ.png"),
     ("MIN","Minnesota Wild","MIN.png"),
     ("VGK","Vegas Golden Knights","VGK.png"),
-    ("SEA","Seattle Kraken","SEA.png")
+    ("SEA","Seattle Kraken","SEA.png"),
+    ("UTA","Utah Hockey Club","UTA.png")
 ]
 
 def findTeamRowInTuple (teamName):

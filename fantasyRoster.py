@@ -1,3 +1,4 @@
+import time
 #List of tuples
 #  Slot, Position,  Player,     Team,  Status, PTS20232024,Line  (note: "PTS20232024" is points from the 2023-2024 season)
 #"Starter","F","Connor McDavid","Edm","Healthy","250.9","1"
@@ -27,22 +28,47 @@ fantasyRosterTuple = [("Starter","F","Connor McDavid","Edm","Healthy","250.9","1
 
 #Similar methods as in proTeams.py so maybe inherit them?
 #Uniqueness is that there can be multiple players with/on the same team
-def findTeamInTuple (teamName):
-    #If abbrev is mixed case, check for a length of 3 (3=abbrev), then make value all uppercase
-    if len(teamName) == 3:
-        teamName=teamName.upper()
+def whatTeamsIHave ():
+    teamList=[]
+    counter=1
     for sublist in fantasyRosterTuple:
-        for element in sublist:
-            if element == teamName:
-                return sublist
-    return None #if value not found
+        team=sublist[3]
+        if counter==1:
+            teamList.append([team,1])
+            counter+=1
+        else:
+            found=False
+            for i in teamList:
+                if sublist[3] == i[0]:
+                    cntr=i[1]+1
+                    i[1]=cntr
+                    found=True
+                    break
 
-def findIndexOfTeamInTuple (teamName):
-    if len(teamName) == 3:
-        teamName=teamName.upper()
-    for sublist in fantasyRosterTuple:
-        for element in sublist:
-            if element == teamName:
-                teamIndex=fantasyRosterTuple.index(sublist)
-                return teamIndex
-    return None #if value not found
+            if found != True:
+                teamList.append([team,1])
+
+    return teamList
+
+# def findTeamInTuple (teamName):
+#     #If abbrev is mixed case, check for a length of 3 (3=abbrev), then make value all uppercase
+#     if len(teamName) == 3:
+#         teamName=teamName.upper()
+#     for sublist in fantasyRosterTuple:
+#         for element in sublist:
+#             if element == teamName:
+#                 return sublist
+#     return None #if value not found
+
+# def findIndexOfTeamInTuple (teamName):
+#     if len(teamName) == 3:
+#         teamName=teamName.upper()
+#     for sublist in fantasyRosterTuple:
+#         for element in sublist:
+#             if element == teamName:
+#                 teamIndex=fantasyRosterTuple.index(sublist)
+#                 return teamIndex
+#     return None #if value not found
+
+teamList=whatTeamsIHave()
+# time.sleep(1)

@@ -1,14 +1,15 @@
 import requests
 import json
-import os
-import sys
-import proTeams
-import teamGameCount
-from openpyxl import Workbook
-from openpyxl.styles import Font, Color, Alignment, Border, Side, PatternFill
-from openpyxl.drawing.image import Image as ExcelImage
-from datetime import datetime, timedelta, date
-from PIL import Image
+# import os
+# import sys
+# import proTeams
+# import teamGameCount
+import fantasyRoster
+# from openpyxl import Workbook
+# from openpyxl.styles import Font, Color, Alignment, Border, Side, PatternFill
+# from openpyxl.drawing.image import Image as ExcelImage
+# from datetime import datetime, timedelta, date
+# from PIL import Image
 import time
 
 #Probably want to consider refactoring some of the code that is shared
@@ -21,14 +22,15 @@ class GetGameSchedule:
 
     def getGameDayInfo(self):
         r=self.nhlApi
-        gamesPerDay=[("MON"),
-            ("TUE"),
-            ("WED"),
-            ("THU"),
-            ("FRI"),
-            ("SAT"),
-            ("SUN")
-        ]
+        # gamesPerDay=[("MON"),
+        #     ("TUE"),
+        #     ("WED"),
+        #     ("THU"),
+        #     ("FRI"),
+        #     ("SAT"),
+        #     ("SUN")
+        # ]
+        gamesPerDay=[]
         if r.status_code != 200:
             print ("Problem connecting with NHL API")
             exit
@@ -37,14 +39,21 @@ class GetGameSchedule:
             dateGameOfWeek = i["date"]
             dayAbbrev = i["dayAbbrev"]
             dayNumberOfGames = i["numberOfGames"] #games for the day
-            gamesPerDay.append(dateGameOfWeek,dayAbbrev,dayNumberOfGames)
-        return (gamesPerDay)
+            for j in i["games"]:
+                awayTeam=j["awayTeam"]["abbrev"]
+                homeTeam=j["homeTeam"]["abbrev"]
+                gamesPerDay.append([dateGameOfWeek,dayAbbrev,dayNumberOfGames,awayTeam,homeTeam])
+        return gamesPerDay
 
 #Retrieve Schedule
-#Calling a class to parse thru the API json and creates a text file of the info for the schedule
+#Calling a class to parse thru the API json and creates a list of the game schedule by day for the week
+# dateGameOfWeek,dayAbbrev,dayNumberOfGames,awayTeam,homeTeam
+#  2024-04-08      Mon            2           PIT       TOR
+#  2024-04-08      Mon            2           VGK       VAN
+#  2024-04-09      Tue            13          CAR       BOS
 dateForTheWeek='2024-04-08'
 a=GetGameSchedule(dateForTheWeek)
-a.getGameDayInfo()
+gamesPerDay=a.getGameDayInfo()
 time.sleep(1)
 #Figure out game count per team for the week
 
