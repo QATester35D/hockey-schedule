@@ -22,14 +22,6 @@ class GetGameSchedule:
 
     def getGameDayInfo(self):
         r=self.nhlApi
-        # gamesPerDay=[("MON"),
-        #     ("TUE"),
-        #     ("WED"),
-        #     ("THU"),
-        #     ("FRI"),
-        #     ("SAT"),
-        #     ("SUN")
-        # ]
         gamesPerDay=[]
         if r.status_code != 200:
             print ("Problem connecting with NHL API")
@@ -44,16 +36,98 @@ class GetGameSchedule:
                 homeTeam=j["homeTeam"]["abbrev"]
                 gamesPerDay.append([dateGameOfWeek,dayAbbrev,dayNumberOfGames,awayTeam,homeTeam])
         return gamesPerDay
+    
+    def myTeamsPlaying(self, teamList, gamesPerDay):
+        #Loop on day for the number of games, check teams against my teamList, then player list fantasyRosterTuple, create a new list
+        whosPlaying=[]
+        gpdListSize=len(gamesPerDay)
+        forwardCounter=defenseCounter=goalieCounter=utilityPositionNeeded=0 #max 9 forwards, 5 defensemen, 2 goalies, 1 utility
+        allGoaliesPlaying=False
+        teams=[]
+        for i in range(gpdListSize):
+            # anyTeamsOnThisDay=0
+            awayTeam=self.searchTeamList(gamesPerDay[i][3],teamList) #see if I have a player on this team
+            if awayTeam != None:
+                teams.append(awayTeam) #add team position nbr in teamList if player on team
+            homeTeam=self.searchTeamList(gamesPerDay[i][4],teamList) #see if I have a player on this team
+            if homeTeam != None:
+                teams.append(homeTeam) #add team position nbr in teamList if player on team
+            teamsSize=len(teams)
+            for j in range(teamsSize):
+                team=teams[j] #grab the team position nbr
+                nbrPlayersPerTeam=teamList[team][1] #grab the nbr of players I have on this team
+                playerList=self.playerListPerTeam(team)
+                for p in range(nbrPlayersPerTeam):
+                    playerPosition=playerList[p][0]
+                    playerName=playerList[p][1]
+                    playerTeam=playerList[p][2]
+                    match playerPosition:
+                        case "F":
+                            forwardCounter+=1
+                            if forwardCounter <= 9:
+                                positionSlot="F"+str(forwardCounter)
+                            else:
+                                utilityPositionNeeded+=1
+                        case "D":
+                            defenseCounter+=1
+                            if defenseCounter <= 5:
+                                positionSlot="D"+str(defenseCounter)
+                            else:
+                                utilityPositionNeeded+=1
+                        case "G":
+                            goalieCounter+=1
+                            if goalieCounter <= 2:
+                                positionSlot="G"+str(goalieCounter)
+                            else:
+                                allGoaliesPlaying=True
+                        case _:
+                            print("Problem with the data. Expected a player position but instead got:",playerPosition)
+                    
+                    if utilityPositionNeeded > 1:
+                        print ("Houston we have a problem")
 
-#Retrieve Schedule
+                    if allGoaliesPlaying:
+                        print ("Houston we have a problem")
+
+                    whosPlaying.append([positionSlot,gamesPerDay[0][0],playerName,playerTeam])
+        return whosPlaying
+
+    def searchTeamList(self, team, teamList):
+        teamListSize=len(teamList)
+        for i in range(teamListSize):
+            if team == teamList[i][0]:
+                return i
+        return None
+
+    def playerListPerTeam(self, teamNbr):
+        playerList=[]
+        teamInfo=teamList[teamNbr]
+        fantasyRosterTupleSize=len(fantasyRoster.fantasyRosterTuple)
+        # for i in range(teamInfo[1]):
+        ctr=0
+        for j in range(fantasyRosterTupleSize):
+            if fantasyRoster.fantasyRosterTuple[j][3] == teamInfo[0]:
+                ctr+=1
+                playerPosition=fantasyRoster.fantasyRosterTuple[j][1]
+                playerName=fantasyRoster.fantasyRosterTuple[j][2]
+                playerTeam=fantasyRoster.fantasyRosterTuple[j][3]
+                playerList.append([playerPosition,playerName,playerTeam])
+                if ctr == teamInfo[1]:
+                    break
+        return playerList
+
+#Retrieve Schedule of "Who's playing"
 #Calling a class to parse thru the API json and creates a list of the game schedule by day for the week
 # dateGameOfWeek,dayAbbrev,dayNumberOfGames,awayTeam,homeTeam
+#      0            1             2            3         4
 #  2024-04-08      Mon            2           PIT       TOR
 #  2024-04-08      Mon            2           VGK       VAN
 #  2024-04-09      Tue            13          CAR       BOS
 dateForTheWeek='2024-04-08'
 a=GetGameSchedule(dateForTheWeek)
 gamesPerDay=a.getGameDayInfo()
+teamList=fantasyRoster.whatTeamsIHave()
+whosPlaying=a.myTeamsPlaying(teamList,gamesPerDay)
 time.sleep(1)
 #Figure out game count per team for the week
 
