@@ -43,15 +43,20 @@ class GetGameSchedule:
         gpdListSize=len(gamesPerDay)
         forwardCounter=defenseCounter=goalieCounter=utilityPositionNeeded=0 #max 9 forwards, 5 defensemen, 2 goalies, 1 utility
         allGoaliesPlaying=False
-        teams=[]
-        for i in range(gpdListSize):
+        gpdCtr=0
+        # for i in range(gpdListSize):
+        for i in gamesPerDay:
             # anyTeamsOnThisDay=0
-            awayTeam=self.searchTeamList(gamesPerDay[i][3],teamList) #see if I have a player on this team
-            if awayTeam != None:
-                teams.append(awayTeam) #add team position nbr in teamList if player on team
-            homeTeam=self.searchTeamList(gamesPerDay[i][4],teamList) #see if I have a player on this team
-            if homeTeam != None:
-                teams.append(homeTeam) #add team position nbr in teamList if player on team
+            teams=[]
+            dateOfGame=gamesPerDay[gpdCtr][0]
+            dayOfGame=gamesPerDay[gpdCtr][1]
+            nbrGamesPerDay=gamesPerDay[gpdCtr][2]
+            awayTeamId=self.searchTeamList(gamesPerDay[gpdCtr][3],teamList) #see if I have a player on this team
+            if awayTeamId != None:
+                teams.append(awayTeamId) #add team position nbr in teamList if player on team
+            homeTeamId=self.searchTeamList(gamesPerDay[gpdCtr][4],teamList) #see if I have a player on this team
+            if homeTeamId != None:
+                teams.append(homeTeamId) #add team position nbr in teamList if player on team
             teamsSize=len(teams)
             for j in range(teamsSize):
                 team=teams[j] #grab the team position nbr
@@ -89,7 +94,8 @@ class GetGameSchedule:
                     if allGoaliesPlaying:
                         print ("Houston we have a problem")
 
-                    whosPlaying.append([positionSlot,gamesPerDay[0][0],playerName,playerTeam])
+                    whosPlaying.append([positionSlot,gamesPerDay[gpdCtr][0],playerName,playerTeam])
+            gpdCtr+=1
         return whosPlaying
 
     def searchTeamList(self, team, teamList):
@@ -113,7 +119,7 @@ class GetGameSchedule:
                 playerTeam=fantasyRoster.fantasyRosterTuple[j][3]
                 playerList.append([playerPosition,playerName,playerTeam])
                 if ctr == teamInfo[1]:
-                    break
+                    continue        
         return playerList
 
 #Retrieve Schedule of "Who's playing"
