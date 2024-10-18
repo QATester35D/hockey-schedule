@@ -5,6 +5,8 @@ import json
 # import proTeams
 # import teamGameCount
 import fantasyRoster
+import excelMethods
+from operator import itemgetter
 # from openpyxl import Workbook
 # from openpyxl.styles import Font, Color, Alignment, Border, Side, PatternFill
 # from openpyxl.drawing.image import Image as ExcelImage
@@ -40,15 +42,24 @@ class GetGameSchedule:
     def myTeamsPlaying(self, teamList, gamesPerDay):
         #Loop on day for the number of games, check teams against my teamList, then player list fantasyRosterTuple, create a new list
         whosPlaying=[]
-        gpdListSize=len(gamesPerDay)
-        forwardCounter=defenseCounter=goalieCounter=utilityPositionNeeded=0 #max 9 forwards, 5 defensemen, 2 goalies, 1 utility
+        prevDateOfGame=None
+        forwardCounter=defenseCounter=goalieCounter=extraForward=extraDefenseman=extraGoalie=0 #max 9 forwards, 5 defensemen, 2 goalies, 1 utility
         allGoaliesPlaying=False
+        gpdListSize=len(gamesPerDay)
         gpdCtr=0
         # for i in range(gpdListSize):
         for i in gamesPerDay:
             # anyTeamsOnThisDay=0
             teams=[]
             dateOfGame=gamesPerDay[gpdCtr][0]
+            if gpdCtr != 0:
+                if dateOfGame != prevDateOfGame:
+                    prevDateOfGame=dateOfGame
+                    forwardCounter=defenseCounter=goalieCounter=extraForward=extraDefenseman=extraGoalie=benchCounter=0 #max 9 forwards, 5 defensemen, 2 goalies, 1 utility
+                    allGoaliesPlaying=False
+            else:
+                prevDateOfGame=dateOfGame
+
             dayOfGame=gamesPerDay[gpdCtr][1]
             nbrGamesPerDay=gamesPerDay[gpdCtr][2]
             awayTeamId=self.searchTeamList(gamesPerDay[gpdCtr][3],teamList) #see if I have a player on this team
@@ -72,30 +83,36 @@ class GetGameSchedule:
                             if forwardCounter <= 9:
                                 positionSlot="F"+str(forwardCounter)
                             else:
-                                utilityPositionNeeded+=1
+                                extraForward+=1
+                                benchCounter+=1
+                                positionSlot="BE"+str(benchCounter)
                         case "D":
                             defenseCounter+=1
                             if defenseCounter <= 5:
                                 positionSlot="D"+str(defenseCounter)
                             else:
-                                utilityPositionNeeded+=1
+                                extraDefenseman+=1
+                                benchCounter+=1
+                                positionSlot="BE"+str(benchCounter)
                         case "G":
                             goalieCounter+=1
                             if goalieCounter <= 2:
                                 positionSlot="G"+str(goalieCounter)
                             else:
-                                allGoaliesPlaying=True
+                                extraGoalie+=1
+                                positionSlot="Goalie BE"+str(extraGoalie)
                         case _:
                             print("Problem with the data. Expected a player position but instead got:",playerPosition)
                     
-                    if utilityPositionNeeded > 1:
-                        print ("Houston we have a problem")
+                    # if utilityPositionNeeded < 1:
+                    #     positionSlot="UTIL"
+                    # else:
+                    #     print ("Trying to fill Utility position with more than 1 skater. This is player:", playerName,"position:",playerPosition)
 
-                    if allGoaliesPlaying:
-                        print ("Houston we have a problem")
-
-                    whosPlaying.append([positionSlot,gamesPerDay[gpdCtr][0],playerName,playerTeam])
+                    whosPlaying.append([dateOfGame,positionSlot,playerName,playerTeam])
             gpdCtr+=1
+            # forwardCounter=defenseCounter=goalieCounter=utilityPositionNeeded=0 #max 9 forwards, 5 defensemen, 2 goalies, 1 utility
+            # allGoaliesPlaying=False
         return whosPlaying
 
     def searchTeamList(self, team, teamList):
@@ -134,13 +151,32 @@ a=GetGameSchedule(dateForTheWeek)
 gamesPerDay=a.getGameDayInfo()
 teamList=fantasyRoster.whatTeamsIHave()
 whosPlaying=a.myTeamsPlaying(teamList,gamesPerDay)
+sortedWhosPlayingList=sorted(whosPlaying, key=itemgetter(0,1,3))
 time.sleep(1)
+#Calling a class to parse thru the API json and creates a text file of the info for the schedule
+# filename = "c:\\Temp\\demoHockeySchedule.txt"
+# a.getNhlGameInfo(filename)
+
+#Calling a class to create the excel file with the scheduled data
+xName="c:\\Temp\\hockeydemo.xlsx"
+rowOneHeader = ["Abbrev","Team Logo","MON","TUE","WED","THU","FRI","SAT","SUN","Game Count"]
+rowOneHeaderCount=len(rowOneHeader)
+excelNhlSchedule=excelMethods.WriteNHLSchedule(xName)
+excelNhlSchedule.set_row_height(1, 15)
+excelNhlSchedule.set_column_width(1, 10, 12)  # Set columns A to H to width 10
+excelNhlSchedule.set_column_width(10, 11, 15)
+i=1
+for a in range(rowOneHeaderCount):
+    excelNhlSchedule.set_cell_font(1, i, bold=True, color='090DF8')  # Set font bold and blue color for cell A1
+    excelNhlSchedule.set_cell_alignment(1, i, horizontal='center', vertical='center')  # Center align cell A1
+    excelNhlSchedule.set_cell_border(1, i)  # Add thin border to cell A1
+    excelNhlSchedule.set_cell_fill_color(1, i, color='EEF8A6')  # Set light yellow fill color for cell A1
+    i+=1
+
+dayOfWeekIndex=0
+excelNhlSchedule.write_row_data(1, rowOneHeader)  # Write data to row 1
 #Figure out game count per team for the week
-
 #Read Player dictionary of players on my fantasy team
-
 #Based on player dictionary, retrieve the player id from their team info
-
 #Based on player teams, sort roster by position and "games to play per team"
-
 #Further sort the player list by their playing line
