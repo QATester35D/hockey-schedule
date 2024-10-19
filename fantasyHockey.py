@@ -138,6 +138,38 @@ class GetGameSchedule:
                 if ctr == teamInfo[1]:
                     continue        
         return playerList
+    
+    def identifyUtilPlayers(self, sortedWhosPlayingList):
+        slotCount=[]
+        forwardCounter=defenseCounter=0 #get count of positions to determine if a utility slot is needed
+        # tooManyForwards=tooManyDefensemen=False
+        dateCounter=0
+        for p in sortedWhosPlayingList:
+            if dateCounter == 0:
+                processingDate=p[0]
+            if processingDate == p[0]:
+                dateCounter+=1
+                playerSlot=p[1]
+                match playerSlot[0]: #max 9 forwards, 5 defensemen, 1 utility
+                    case "F":
+                        forwardCounter+=1
+                    case "D":
+                        defenseCounter+=1
+        
+        if forwardCounter <= 9 and defenseCounter <=5:
+            print("UTIL slot not needed, no extra guys for date:",processingDate)
+
+        if forwardCounter > 9 and defenseCounter <=5:
+            if forwardCounter == 10:
+                #need to get F10 for the date I'm processing; should I create a temp list above?
+                index=sortedWhosPlayingList[p][1] = "UTIL"
+
+        if defenseCounter > 5 and forwardCounter <=9:
+            if defenseCounter == 6:
+                sortedWhosPlayingList[p][1] = "UTIL"
+
+        if forwardCounter > 9 and defenseCounter > 5:
+            a=1
 
 #Retrieve Schedule of "Who's playing"
 #Calling a class to parse thru the API json and creates a list of the game schedule by day for the week
@@ -152,6 +184,7 @@ gamesPerDay=a.getGameDayInfo()
 teamList=fantasyRoster.whatTeamsIHave()
 whosPlaying=a.myTeamsPlaying(teamList,gamesPerDay)
 sortedWhosPlayingList=sorted(whosPlaying, key=itemgetter(0,1,3))
+a.identifyUtilPlayers(sortedWhosPlayingList)
 time.sleep(1)
 #Calling a class to parse thru the API json and creates a text file of the info for the schedule
 # filename = "c:\\Temp\\demoHockeySchedule.txt"
