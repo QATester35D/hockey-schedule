@@ -1,30 +1,30 @@
 import time
 #List of tuples
-#  Slot, Position,  Player,     Team,  Status, PTS20232024,Line  (note: "PTS20232024" is points from the 2023-2024 season)
-#"Starter","F","Connor McDavid","Edm","Healthy","250.9",    "1"
-#    0      1         2           3       4         5        6
-fantasyRosterTuple = [("Starter","F","Connor McDavid","EDM","Healthy","250.9","1"),
-    ("Starter","F","Connor Bedard","CHI","Healthy","136.7","1"),
-    ("Starter","F","Wyatt Johnston","DAL","Healthy","157","1"),
-    ("Starter","F","Fabian Zetterlund","SJS","Healthy","148.9","1"),
-    ("Starter","F","Trevor Moore","LAK","Healthy","158.5","3"),
-    ("Starter","F","Alexis Lafreniere","NYR","Healthy","127.7","1"),
-    ("Starter","F","Mark Scheifele","WPG","Healthy","152.9","1"),
-    ("Starter","F","Tom Wilson","WSH","Healthy","140.4","2"),
-    ("Starter","F","Matty Beniers","SEA","Healthy","104.3","1"),
-    ("Starter","D","Rasmus Dahlin","BUF","Healthy","212.9","1"),
-    ("Starter","D","Josh Morrissey","WPG","Healthy","169.7","1"),
-    ("Starter","D","Jake Sanderson","OTT","Healthy","147.6","1"),
-    ("Starter","D","Seth Jones","CHI","Healthy","136.3","1"),
-    ("Starter","D","Travis Sanheim","PHI","Healthy","157","1"),
-    ("UTIL","D","K'Andre Miller","NYR","Healthy","119.6","2"),
-    ("Bench","F","Elias Lindholm","BOS","DTD","129","1"),
-    ("Bench","F","Anthony Cirelli","TBL","Healthy","130.2","2"),
-    ("Bench","D","Jake Middleton","MIN","Healthy","134.5","2"),
-    ("Bench","D","Mason Lohrei","BOS","Healthy","58.1","3"),
-    ("Starter","G","Connor Hellebuyck","WPG","Healthy","214.2","1"),
-    ("Starter","G","Frederik Andersen","CAR","Healthy","81.4","2"),
-    ("Bench","G","Logan Thompson","WSH","Healthy","105.8","2")
+#  Slot, Position,  Player,     Team
+#"Starter","F","Connor McDavid","Edm"
+#    0      1         2           3
+fantasyRosterTuple = [("Starter","F","Connor McDavid","EDM"),
+    ("Starter","F","Connor Bedard","CHI"),
+    ("Starter","F","Johnny Beecher","BOS"),
+    ("Starter","F","Fabian Zetterlund","SJS"),
+    ("Starter","F","Trevor Moore","LAK"),
+    ("Starter","F","Alexis Lafreniere","NYR"),
+    ("Starter","F","Mark Scheifele","WPG"),
+    ("Starter","F","Tom Wilson","WSH"),
+    ("Starter","F","Matty Beniers","SEA"),
+    ("Starter","D","Rasmus Dahlin","BUF"),
+    ("Starter","D","Josh Morrissey","WPG"),
+    ("Starter","D","Jake Sanderson","OTT"),
+    ("Starter","D","Seth Jones","CHI"),
+    ("Starter","D","Travis Sanheim","PHI"),
+    ("UTIL","F","Nino Niederreiter","WPG"),
+    ("Bench","F","Elias Lindholm","BOS"),
+    ("Bench","F","Anthony Cirelli","TBL"),
+    ("Bench","D","Jake Middleton","MIN"),
+    ("Bench","D","Mason Lohrei","BOS"),
+    ("Starter","G","Connor Hellebuyck","WPG"),
+    ("Starter","G","Frederik Andersen","CAR"),
+    ("Bench","G","Logan Thompson","WSH")
 ]
 
 #Similar methods as in proTeams.py so maybe inherit them?

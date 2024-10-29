@@ -14,7 +14,10 @@ from operator import itemgetter
 # from PIL import Image
 import time
 
-#Probably want to consider refactoring some of the code that is shared
+###################
+# Probably want to consider refactoring some of the code that is shared
+## Need to hit player API to retrieve player stats
+###################
 
 #This class parses thru the API json and creates a text file of the info for the schedule
 class GetGameSchedule:
@@ -141,35 +144,48 @@ class GetGameSchedule:
     
     def identifyUtilPlayers(self, sortedWhosPlayingList):
         slotCount=[]
-        forwardCounter=defenseCounter=0 #get count of positions to determine if a utility slot is needed
+        forwardCounter=defenseCounter=dateCounter=0 #get count of positions to determine if a utility slot is needed
         # tooManyForwards=tooManyDefensemen=False
-        dateCounter=0
+        #### refactor this - simplify it using this List Comprehension
+        result = [x for x in sortedWhosPlayingList if x[0] == '2024-10-22' and x[1][0:2] == "BE"]
+        aa=0
         for p in sortedWhosPlayingList:
             if dateCounter == 0:
                 processingDate=p[0]
             if processingDate == p[0]:
                 dateCounter+=1
                 playerSlot=p[1]
-                match playerSlot[0]: #max 9 forwards, 5 defensemen, 1 utility
-                    case "F":
-                        forwardCounter+=1
-                    case "D":
-                        defenseCounter+=1
-        
-        if forwardCounter <= 9 and defenseCounter <=5:
-            print("UTIL slot not needed, no extra guys for date:",processingDate)
-
-        if forwardCounter > 9 and defenseCounter <=5:
-            if forwardCounter == 10:
-                #need to get F10 for the date I'm processing; should I create a temp list above?
-                index=sortedWhosPlayingList[p][1] = "UTIL"
-
-        if defenseCounter > 5 and forwardCounter <=9:
-            if defenseCounter == 6:
-                sortedWhosPlayingList[p][1] = "UTIL"
-
-        if forwardCounter > 9 and defenseCounter > 5:
-            a=1
+                result = [x for x in sortedWhosPlayingList if x[0] == processingDate and x[1] == "BE1"]
+                aa=0
+                # ####don't need to do this since the slot is numbered, just go after the max F and D (like F10 and D6)
+                # match playerSlot[0]: #max 9 forwards, 5 defensemen, 1 utility
+                #     case "F":
+                #         forwardCounter+=1
+                #     case "D":
+                #         defenseCounter+=1
+            else:
+                if forwardCounter <= 9 and defenseCounter <=5:
+                    print("UTIL slot not needed, no extra guys for date:",processingDate)
+                    forwardCounter=defenseCounter=dateCounter=0
+                    continue
+                if forwardCounter > 9 and defenseCounter <=5:
+                    if forwardCounter == 10:
+                        #need to get F10 for the date I'm processing; should I create a temp list above?
+                        playingDate = processingDate
+                        playerSlot = "F10"
+                        result = [x for x in sortedWhosPlayingList if x[0] == processingDate and x[1] == "F10"]
+                        index=sortedWhosPlayingList[p][1] = "UTIL"
+                        forwardCounter=defenseCounter=dateCounter=0
+                        continue
+                if defenseCounter > 5 and forwardCounter <=9:
+                    if defenseCounter == 6:
+                        sortedWhosPlayingList[p][1] = "UTIL"
+                        forwardCounter=defenseCounter=dateCounter=0
+                        continue
+                if forwardCounter > 9 and defenseCounter > 5:
+                    a=1
+                    forwardCounter=defenseCounter=dateCounter=0
+                    continue
 
 #Retrieve Schedule of "Who's playing"
 #Calling a class to parse thru the API json and creates a list of the game schedule by day for the week
@@ -178,7 +194,7 @@ class GetGameSchedule:
 #  2024-04-08      Mon            2           PIT       TOR
 #  2024-04-08      Mon            2           VGK       VAN
 #  2024-04-09      Tue            13          CAR       BOS
-dateForTheWeek='2024-04-08'
+dateForTheWeek='2024-10-21'
 a=GetGameSchedule(dateForTheWeek)
 gamesPerDay=a.getGameDayInfo()
 teamList=fantasyRoster.whatTeamsIHave()
