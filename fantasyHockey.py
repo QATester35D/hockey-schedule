@@ -14,10 +14,10 @@ from operator import itemgetter
 # from PIL import Image
 import time
 
-###################
-# Probably want to consider refactoring some of the code that is shared
+############################################################################
+# In the process of refactoring some of the code that is shared
 ## Need to hit player API to retrieve player stats
-###################
+############################################################################
 
 #This class parses thru the API json and creates a text file of the info for the schedule
 class GetGameSchedule:
