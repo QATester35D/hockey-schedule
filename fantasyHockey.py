@@ -145,47 +145,26 @@ class GetGameSchedule:
     def identifyUtilPlayers(self, sortedWhosPlayingList):
         slotCount=[]
         forwardCounter=defenseCounter=dateCounter=0 #get count of positions to determine if a utility slot is needed
-        # tooManyForwards=tooManyDefensemen=False
-        #### refactor this - simplify it using this List Comprehension
-        result = [x for x in sortedWhosPlayingList if x[0] == '2024-10-22' and x[1][0:2] == "BE"]
-        aa=0
         for p in sortedWhosPlayingList:
             if dateCounter == 0:
-                processingDate=p[0]
-            if processingDate == p[0]:
-                dateCounter+=1
-                playerSlot=p[1]
-                result = [x for x in sortedWhosPlayingList if x[0] == processingDate and x[1] == "BE1"]
-                aa=0
-                # ####don't need to do this since the slot is numbered, just go after the max F and D (like F10 and D6)
-                # match playerSlot[0]: #max 9 forwards, 5 defensemen, 1 utility
-                #     case "F":
-                #         forwardCounter+=1
-                #     case "D":
-                #         defenseCounter+=1
-            else:
-                if forwardCounter <= 9 and defenseCounter <=5:
+                processingDate=p[0] #to set initial value to compare to
+            # if processingDate == p[0]:
+            #     dateCounter+=1
+            #     playerSlot=p[1]
+            result = [x for x in sortedWhosPlayingList if x[0] == processingDate and x[1][0:2] == "BE"]
+            benchPlayers=len(result)
+            #Still working on updating this logic. Need access to player stats and API wasn't returning the values
+            match benchPlayers:
+                case 0:
+                    forwardCounter=defenseCounter=dateCounter=0
                     print("UTIL slot not needed, no extra guys for date:",processingDate)
+                case 1:
+                    index=sortedWhosPlayingList[p][1] = "UTIL"
+                    print("Only one bench player so it's easy, he gets put in the UTIL slot.")
                     forwardCounter=defenseCounter=dateCounter=0
-                    continue
-                if forwardCounter > 9 and defenseCounter <=5:
-                    if forwardCounter == 10:
-                        #need to get F10 for the date I'm processing; should I create a temp list above?
-                        playingDate = processingDate
-                        playerSlot = "F10"
-                        result = [x for x in sortedWhosPlayingList if x[0] == processingDate and x[1] == "F10"]
-                        index=sortedWhosPlayingList[p][1] = "UTIL"
-                        forwardCounter=defenseCounter=dateCounter=0
-                        continue
-                if defenseCounter > 5 and forwardCounter <=9:
-                    if defenseCounter == 6:
-                        sortedWhosPlayingList[p][1] = "UTIL"
-                        forwardCounter=defenseCounter=dateCounter=0
-                        continue
-                if forwardCounter > 9 and defenseCounter > 5:
-                    a=1
-                    forwardCounter=defenseCounter=dateCounter=0
-                    continue
+                case _:
+                    print("More than 1 bench player, need to figure out how to pick the right player.")
+
 
 #Retrieve Schedule of "Who's playing"
 #Calling a class to parse thru the API json and creates a list of the game schedule by day for the week
@@ -194,7 +173,7 @@ class GetGameSchedule:
 #  2024-04-08      Mon            2           PIT       TOR
 #  2024-04-08      Mon            2           VGK       VAN
 #  2024-04-09      Tue            13          CAR       BOS
-dateForTheWeek='2024-10-21'
+dateForTheWeek='2024-11-04'
 a=GetGameSchedule(dateForTheWeek)
 gamesPerDay=a.getGameDayInfo()
 teamList=fantasyRoster.whatTeamsIHave()
